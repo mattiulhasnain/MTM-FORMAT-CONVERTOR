@@ -42,18 +42,24 @@ document.addEventListener('DOMContentLoaded', () => {
     openModal('Help', '<p>Drag & drop files to convert. Use the target format dropdown to choose the desired output.</p>');
   });
   menuAbout.addEventListener('click', () => {
-    openModal('About', '<p>Advanced Offline File Converter<br>Version 1.2<br>Developed by M&A</p>');
+    openModal('About', '<p>Advanced Offline File Converter<br>Version 1.3<br>Developed by M&A</p>');
   });
 
-  // Theme toggle with bounce animation
-  themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    themeToggle.classList.remove('bounce');
-    void themeToggle.offsetWidth; // Trigger reflow to restart animation
-    themeToggle.classList.add('bounce');
+  // Theme selection
+  const themeButtons = document.querySelectorAll('.theme-btn');
+  themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.body.className = ''; // Clear all classes
+      document.body.classList.add(btn.dataset.theme);
+      localStorage.setItem('theme', btn.dataset.theme);
+      btn.classList.add('scale-up');
+      setTimeout(() => btn.classList.remove('scale-up'), 300);
+    });
   });
-  if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+
+  // Set initial theme
+  const savedTheme = localStorage.getItem('theme') || 'default-theme';
+  document.body.classList.add(savedTheme);
 
   // Language selection (placeholder)
   languageSelect.addEventListener('change', (e) => {
@@ -116,14 +122,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function showPreview(file) {
     const previewArea = document.getElementById('previewArea');
     const previewItem = document.createElement('div');
-    previewItem.classList.add('preview-item');
-    previewItem.innerHTML = `<strong>${file.name}</strong><br><small>${(file.size/1024).toFixed(1)} KB</small>`;
-    if(file.type.startsWith('image/')) {
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(file);
-      img.onload = () => URL.revokeObjectURL(img.src);
-      previewItem.appendChild(img);
-    }
+    previewItem.classList.add('preview-item', 'fade-in');
+    previewItem.innerHTML = `
+      <strong>${file.name}</strong><br>
+      <small>${(file.size/1024).toFixed(1)} KB</small>
+      <div class="preview-comparison">
+        <div class="original-preview">
+          <h4>Original</h4>
+          <img src="${URL.createObjectURL(file)}" alt="Original">
+        </div>
+        <div class="converted-preview">
+          <h4>Converted</h4>
+          <div class="placeholder">Preview will appear after conversion</div>
+        </div>
+      </div>
+    `;
     previewArea.appendChild(previewItem);
   }
 
@@ -132,7 +145,39 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentIndex = 0;
     statusText.textContent = 'Starting conversion...';
     progressBar.value = 0;
-    files.forEach(showPreview);
+    
+    // Show upload progress
+    const uploadProgress = document.createElement('div');
+    uploadProgress.className = 'upload-progress';
+    const uploadProgressBar = document.createElement('div');
+    uploadProgressBar.className = 'upload-progress-bar';
+    uploadProgress.appendChild(uploadProgressBar);
+    document.body.appendChild(uploadProgress);
+    
+    // Update progress as files are read
+    let totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    let loadedSize = 0;
+    
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onprogress = (e) => {
+        loadedSize += e.loaded;
+        const percent = Math.round((loadedSize / totalSize) * 100);
+        uploadProgressBar.style.width = `${percent}%`;
+      };
+      reader.onloadend = () => {
+        showPreview(file);
+        if (++currentIndex === files.length) {
+          uploadProgress.remove();
+          startConversion(files);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+  
+  function startConversion(files) {
+    let currentIndex = 0;
     
     function processNext() {
       if(currentIndex < files.length) {
