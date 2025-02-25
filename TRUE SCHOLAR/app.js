@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openModal('Help', '<p>Drag & drop files to convert. Use the target format dropdown to choose the desired output.</p>');
   });
   menuAbout.addEventListener('click', () => {
-    openModal('About', '<p>Advanced Offline File Converter<br>Version 1.0<br>Developed by TRUE SCHOLAR</p>');
+    openModal('About', '<p>Advanced Offline File Converter<br>Version 1.2<br>Developed by M&A</p>');
   });
 
   // Theme toggle with bounce animation
@@ -168,16 +168,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Process single file based on its type
   function processFile(file, callback) {
-    if(file.type.startsWith('image/')) {
-      processImage(file, callback);
-    } else if(file.type === 'text/plain' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.type === 'text/csv') {
-      processTextToPDF(file, callback);
-    } else if(file.type.startsWith('audio/')) {
-      processAudio(file, callback);
-    } else if(file.type.startsWith('video/')) {
-      processVideo(file, callback);
-    } else {
-      statusText.textContent = 'Unsupported file type.';
+    try {
+      if(file.type.startsWith('image/')) {
+        processImage(file, callback);
+      } else if(file.type === 'text/plain' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.type === 'text/csv') {
+        processTextToPDF(file, callback);
+      } else if(file.type.startsWith('audio/')) {
+        processAudio(file, callback);
+      } else if(file.type.startsWith('video/')) {
+        processVideo(file, callback);
+      } else {
+        throw new Error(`Unsupported file type: ${file.type}`);
+      }
+    } catch (error) {
+      statusText.textContent = `Error: ${error.message}`;
+      addLog(`Conversion failed: ${error.message}`);
       callback();
     }
   }
@@ -203,6 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
           downloadLink.href = convertedData;
           downloadLink.download = `converted_${file.name.split('.')[0]}.${target}`;
           downloadLink.style.display = 'inline-block';
+          downloadLink.click(); // Trigger download
+          URL.revokeObjectURL(downloadLink.href); // Clean up
           statusText.textContent = 'Image conversion complete!';
           callback();
         }
@@ -223,6 +230,8 @@ function processTextToPDF(file, callback) {
     downloadLink.href = pdfData;
     downloadLink.download = `converted_${file.name.split('.')[0]}.pdf`;
     downloadLink.style.display = 'inline-block';
+    downloadLink.click(); // Trigger download
+    URL.revokeObjectURL(downloadLink.href); // Clean up
     statusText.textContent = 'Text-to-PDF conversion complete!';
     callback();
   };
@@ -242,6 +251,8 @@ function processAudio(file, callback) {
       downloadLink.href = URL.createObjectURL(file);
       downloadLink.download = `converted_${file.name}`;
       downloadLink.style.display = 'inline-block';
+      downloadLink.click(); // Trigger download
+      URL.revokeObjectURL(downloadLink.href); // Clean up
       statusText.textContent = 'Audio conversion complete!';
       callback();
     }
@@ -260,6 +271,8 @@ function processVideo(file, callback) {
       downloadLink.href = URL.createObjectURL(file);
       downloadLink.download = `converted_${file.name}`;
       downloadLink.style.display = 'inline-block';
+      downloadLink.click(); // Trigger download
+      URL.revokeObjectURL(downloadLink.href); // Clean up
       statusText.textContent = 'Video conversion complete!';
       callback();
     }
