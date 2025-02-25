@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Offline File Converter</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Menu Bar -->
+  <header class="menu-bar">
+    <nav>
+      <ul>
+        <li id="menuFile">File</li>
+        <li id="menuSettings">Settings</li>
+        <li id="menuHelp">Help</li>
+        <li id="menuAbout">About</li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Conversion History</h2>
+      <ul id="historyList"></ul>
+      <h2>Logs</h2>
+      <div id="logArea"></div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+      <h1>Advanced Offline File Converter</h1>
+      
+      <!-- Drag-and-Drop Zone -->
+      <div id="dropZone" class="drop-zone">
+        <p>Drag & drop your files here or click to select</p>
+        <input type="file" id="fileInput" multiple hidden>
+      </div>
+
+      <!-- File Preview Area -->
+      <div id="previewArea" class="preview-area"></div>
+
+      <!-- Progress and Status -->
+      <div id="progressContainer" class="progress-container">
+        <progress id="progressBar" value="0" max="100"></progress>
+        <p id="statusText" class="status-msg"></p>
+      </div>
+
+      <!-- Download Link -->
+      <a id="downloadLink" class="download-link" style="display: none;">Download Converted File</a>
+    </main>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-content">
+      <span id="modalClose" class="modal-close">&times;</span>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
