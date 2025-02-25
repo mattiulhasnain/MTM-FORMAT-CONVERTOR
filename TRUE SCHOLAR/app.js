@@ -169,7 +169,19 @@ document.addEventListener('DOMContentLoaded', () => {
         showPreview(file);
         if (++currentIndex === files.length) {
           uploadProgress.remove();
-          startConversion(files);
+          // Show format selection modal
+          const fileType = files[0].type; // Get type of first file
+          updateTargetFormatOptions(fileType);
+          const formatModalContent = `
+            <h3>Select Target Format</h3>
+            <select id="selectedFormat" class="dropdown">
+              ${Array.from(targetFormat.options).map(opt => 
+                `<option value="${opt.value}">${opt.text}</option>`
+              ).join('')}
+            </select>
+            <button onclick="startConversion(files)">Convert</button>
+          `;
+          openModal('Select Format', formatModalContent);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -177,7 +189,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function startConversion(files) {
+    const selectedFormat = document.getElementById('selectedFormat').value;
     let currentIndex = 0;
+    // Update target format for all files
+    files.forEach(file => {
+      targetFormat.value = selectedFormat;
+    });
     
     function processNext() {
       if(currentIndex < files.length) {
